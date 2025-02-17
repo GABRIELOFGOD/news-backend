@@ -67,6 +67,7 @@ export const globalErrorHandler = (err: any, req: Request, res: Response, next: 
     stack: err.stack,
     statusCode: err.statusCode,
     status: err.status,
+    success: false,
   });
 
   const statusCode = err.statusCode || 500;

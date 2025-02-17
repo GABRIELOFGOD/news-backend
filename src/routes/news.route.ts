@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { deleteNews, getNews, getNewsById, postNews, updateNews, uploadImage } from "../controllers/blog.controller";
+import { deleteNews, getNews, getNewsById, postNews, updateNews, uploadImage } from "../controllers/news.controller";
 import multer from "multer";
 
 const newsRouter = Router();

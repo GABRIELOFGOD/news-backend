@@ -8,19 +8,19 @@ import { StatusCode } from "../services/statusCode";
 import { NewsStatus } from "../@types/news";
 
 export const postNews = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  console.log("req.body", req.body);
   interface RequestBody {
     topic: string;
     content: string;
-    banner: string;
     tags: string[];
     description?: string;
     state?: NewsStatus;
   }
-  const { topic, content, banner, tags, description, state }: RequestBody = req.body;
+  const { topic, content, tags, description, state }: RequestBody = req.body;
 
   // ============== INPUT VALIDATION ============== //
-  if ( !topic || !content || !banner || !tags ) return next(new AppError("All fields are required", StatusCode.BAD_REQUEST));
+  if ( !topic || !content || !tags ) return next(new AppError("All fields are required", StatusCode.BAD_REQUEST));
+
+  if (!req.file) return next(new AppError("Banner is required", StatusCode.BAD_REQUEST));
 
   // ================== CHECKING IF BLOG ALREADY EXISTS ================ //
   const blogExists = await NewsRepository.findOne({ where: { topic } });
@@ -38,21 +38,38 @@ export const postNews = catchAsync(async (req: Request, res: Response, next: Nex
   const blog = NewsRepository.create({
     topic,
     content,
-    banner,
+    banner: req.file.path,
     user: poster,
     description,
-    status: state === NewsStatus.PUBLISHED ? NewsStatus.PUBLISHED : NewsStatus.DRAFT
+    status: state === NewsStatus.PUBLISHED ? NewsStatus.PUBLISHED : NewsStatus.DRAFT,
+    categories: []
   });
 
   // ============== CHECKING FOR TAGS ============== //
-  if (tags.length < 1) return next(new AppError("Categories are required", StatusCode.BAD_REQUEST));
+  let parsedTags: string[] = [];
 
-  for (let tag in tags) {
-    const category = await CategoryRepository.findOne({ where: { name: tag } });
-    if (!category) return next(new AppError("Category not found", StatusCode.NOT_FOUND));
-    blog.categories.push(category);
+  if (typeof tags === "string") {
+    try {
+      parsedTags = JSON.parse(tags);
+    } catch (error) {
+      return next(new AppError("Invalid tags format", StatusCode.BAD_REQUEST));
+    }
+  } else {
+    parsedTags = tags;
   }
 
+  for (const tag of parsedTags) {
+    const trimmedTag = tag;
+  
+    const category = await CategoryRepository.findOne({ where: { name: trimmedTag } });
+  
+    if (!category) {
+      return next(new AppError(`Category "${trimmedTag}" not found`, StatusCode.NOT_FOUND));
+    } else {
+      blog.categories.push(category);
+    }
+  }
+  
   await NewsRepository.save(blog);
   res.json({ message: "Blog created successfully", success: true });
   

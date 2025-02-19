@@ -15,7 +15,8 @@ export const postCategory = catchAsync(async (req: Request, res: Response, next:
   const { name, description }: categoryBody = req.body;
   if (!name) return next(new AppError("At least category name should be provided", StatusCode.BAD_REQUEST));
 
-  const user = await getUser(req.user?.id);
+  const user = await getUser(req.user?.id, next);
+  if (!user) return next(new AppError("User not found", StatusCode.NOT_FOUND));
 
   const newCategory = CategoryRepository.create({
     name,
@@ -26,7 +27,13 @@ export const postCategory = catchAsync(async (req: Request, res: Response, next:
   await CategoryRepository.save(newCategory);
   res.json({
     message: "Category created successfully",
-    success: true
+    success: true,
+    category: newCategory,
   });
 
+});
+
+export const getCategories = catchAsync(async (_req: Request, res: Response, _next: NextFunction) => {
+  const categories = await CategoryRepository.find();
+  res.json({ categories, success: true });
 });

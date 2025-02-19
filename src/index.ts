@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response, Application } from "express";
-import { PORT } from "./config/env";
+import { FRONTEND_URL, PORT } from "./config/env";
 import cors from "cors";
 import userRouter from "./routes/user.route";
 import newsRouter from "./routes/news.route";
@@ -7,6 +7,7 @@ import { AppError, globalErrorHandler } from "./middlewares/error.middleware";
 import dbConfig from "./config/database.config";
 import { dataSource } from "./config/dataSource";
 import categoryRouter from "./routes/category.route";
+import morgan from "morgan";
 
 const app: Application = express();
 dbConfig();
@@ -14,8 +15,11 @@ dbConfig();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({
-  origin: "*"
+  origin: FRONTEND_URL,
+  credentials: true
 }));
+
+app.use(morgan("dev"));
 
 // ============= ROUTES ============= //
 app.get("/", (req: Request, res: Response) => {
@@ -34,7 +38,7 @@ dataSource
 // ============= SERVER ============= //
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/news", newsRouter);
-app.use("/api/v1/category", categoryRouter);
+app.use("/api/v1/categories", categoryRouter);
 
 // ============= GLOBAL ERROR HANDLER ============= //
 app.all("*", (req: Request, res: Response, next: NextFunction) =>

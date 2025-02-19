@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { News } from './news.entity';
 import { Category } from './category.entity';
+import { UserRole } from '../utils/userTypes';
 
 @Entity("user")
 export class User {
@@ -16,8 +17,8 @@ export class User {
   @Column()
   password!: string;
 
-  @Column()
-  role!: string;
+  @Column({ type: "enum", enum: UserRole, default: UserRole.USER })
+  role!: UserRole;
 
   @OneToMany(() => News, (blog) => blog.user)
   blogs!: News[];

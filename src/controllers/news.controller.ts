@@ -35,10 +35,12 @@ export const postNews = catchAsync(async (req: Request, res: Response, next: Nex
   });
   if (!poster) return next(new AppError("User not found", StatusCode.NOT_FOUND));
 
+  const blogBanner = await uploadImageToCloudinary(req.file);
+
   const blog = NewsRepository.create({
     topic,
     content,
-    banner: req.file.path,
+    banner: blogBanner,
     user: poster,
     description,
     status: state === NewsStatus.PUBLISHED ? NewsStatus.PUBLISHED : NewsStatus.DRAFT,
@@ -76,7 +78,10 @@ export const postNews = catchAsync(async (req: Request, res: Response, next: Nex
 });
 
 export const getNews = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  res.json({ message: "Blog details" });
+  const allNews = await NewsRepository.find({
+    relations: ["user", "categories"]
+  });
+  res.json({ news: allNews, success: true });
 });
 
 export const getNewsById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {

@@ -11,7 +11,7 @@ export class News {
   @Column()
   topic!: string;
 
-  @Column()
+  @Column("text")
   content!: string;
 
   @Column()

@@ -81,7 +81,7 @@ export const getNews = catchAsync(async (req: Request, res: Response, next: Next
   const allNews = await NewsRepository.find({
     relations: ["user", "categories"]
   });
-  res.json({ news: allNews, success: true });
+  res.json({ news: allNews.reverse(), success: true });
 });
 
 export const getNewsById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {

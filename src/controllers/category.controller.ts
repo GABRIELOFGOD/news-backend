@@ -35,5 +35,5 @@ export const postCategory = catchAsync(async (req: Request, res: Response, next:
 
 export const getCategories = catchAsync(async (_req: Request, res: Response, _next: NextFunction) => {
   const categories = await CategoryRepository.find();
-  res.json({ categories, success: true });
+  res.json({ categories: categories.reverse(), success: true });
 });
